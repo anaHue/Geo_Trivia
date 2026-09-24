@@ -1,6 +1,5 @@
 ﻿import 'package:flutter/material.dart';
 
-import 'controllers/quiz_controller.dart';
 import 'widgets/QuizScreen/quiz_screen.dart';
 
 void main() {
@@ -12,8 +11,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final QuizController controller = QuizController();
-
     return MaterialApp(
       title: 'Geo Trivia',
       debugShowCheckedModeBanner: false,

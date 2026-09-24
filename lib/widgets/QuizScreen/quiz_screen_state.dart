@@ -1,136 +1,38 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:geo_trivia/models/quiz_question.dart';
-import 'package:sealed_countries/sealed_countries.dart';
+
+import 'package:geo_trivia/constants/app_strings.dart';
+import 'package:geo_trivia/controllers/quiz_controller.dart';
 
 import 'quiz_screen.dart';
 
+/// Pure view: reads state from [QuizController] and forwards user input
+/// to it. Contains no business logic and never touches services directly.
 class QuizScreenState extends State<QuizScreen> {
-  List<QuizQuestion> _questions = [];
-  bool _loading = true;
-  int _index = 0;
-  int _score = 0;
-  String? _feedback;
-  bool _answered = false;
-  bool _isCorrectAnswer = false;
-  QuizQuestion get _currentQuestion => _questions[_index];
+  late final QuizController _controller = widget.controller ?? QuizController();
 
   @override
   void initState() {
     super.initState();
-    _loadQuestions();
+    _controller.addListener(_onControllerChanged);
+    _controller.loadQuestions();
   }
 
-  Future<void> _loadQuestions() async {
-    try {
-      final countries = WorldCountry.list
-          .where(
-            (country) =>
-                country.name.common.trim().isNotEmpty &&
-                country.capitalInfo != null &&
-                country.emoji.trim().isNotEmpty,
-          )
-          .toList()
-        ..shuffle();
-
-      final selected = countries.take(30).toList();
-      final dynamicQuestions = <QuizQuestion>[];
-      final random = Random();
-
-      for (var i = 0; i < selected.length; i++) {
-        final country = selected[i];
-        final capital = country.capitalInfo?.capital.name.trim();
-        if (capital == null || capital.isEmpty) continue;
-
-        final distractors = <String>[];
-
-        while (distractors.length < 3) {
-          final randomIndex = random.nextInt(selected.length);
-          if (randomIndex == i) continue;
-
-          final otherCapital = selected[randomIndex].capitalInfo?.capital.name.trim();
-          if (otherCapital != null &&
-              otherCapital.isNotEmpty &&
-              otherCapital != capital &&
-              !distractors.contains(otherCapital)) {
-            distractors.add(otherCapital);
-          }
-        }
-
-        final options = <String>{capital, ...distractors}.toList();
-        options.shuffle();
-
-        dynamicQuestions.add(
-          QuizQuestion(
-            flag: country.emoji,
-            country: country.name.common,
-            capital: capital,
-            options: options.take(4).toList(),
-          ),
-        );
-      }
-
-      dynamicQuestions.shuffle();
-
-      if (!mounted) return;
-      setState(() {
-        _questions = dynamicQuestions.take(20).toList();
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _questions = [];
-        _loading = false;
-      });
+  @override
+  void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    if (widget.controller == null) {
+      _controller.dispose();
     }
+    super.dispose();
   }
 
-  void _checkAnswer(String selectedOption) {
-    if (_answered) return;
-
-    final isCorrect = selectedOption == _currentQuestion.capital;
-
-    setState(() {
-      _answered = true;
-      _isCorrectAnswer = isCorrect;
-      _score += isCorrect ? 1 : 0;
-      _feedback = isCorrect
-          ? 'Correct! ${_currentQuestion.capital} is the capital of ${_currentQuestion.country}.'
-          : 'Not quite. The correct answer is ${_currentQuestion.capital} (${_currentQuestion.country}).';
-    });
-  }
-
-  void _nextQuestion() {
-    setState(() {
-      if (_index < _questions.length - 1) {
-        _index += 1;
-      } else {
-        _index = 0;
-      }
-      _answered = false;
-      _feedback = null;
-      _isCorrectAnswer = false;
-    });
-  }
-
-  void _restartGame() {
-    setState(() {
-      _loading = true;
-      _questions = [];
-      _index = 0;
-      _score = 0;
-      _answered = false;
-      _feedback = null;
-      _isCorrectAnswer = false;
-    });
-    _loadQuestions();
+  void _onControllerChanged() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
+    if (_controller.state.loading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -138,36 +40,36 @@ class QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    if (_questions.isEmpty) {
+    if (!_controller.state.hasQuestions) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Geo Trivia'),
+          title: const Text(AppStrings.appTitle),
           centerTitle: true,
           backgroundColor: Colors.green.shade700,
           foregroundColor: Colors.white,
         ),
         body: const Center(
-          child: Text('No countries loaded. Please try again.'),
+          child: Text(AppStrings.noCountriesLoaded),
         ),
       );
     }
 
-    final question = _currentQuestion;
-    final isLastQuestion = _index == _questions.length - 1;
+    final question = _controller.state.currentQuestion;
+    final isLastQuestion = _controller.state.isLastQuestion;
 
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final statsRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Question ${_index + 1}/${_questions.length}',
+          AppStrings.questionCounter(_controller.state.index + 1, _controller.state.questionCount),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
-          'Score: $_score',
+          AppStrings.score(_controller.state.score),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -183,7 +85,7 @@ class QuizScreenState extends State<QuizScreen> {
         child: Column(
           children: [
             Text(
-              'Find the capital city of ${question.country}',
+              AppStrings.findCapitalPrompt(question.country),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
@@ -218,7 +120,7 @@ class QuizScreenState extends State<QuizScreen> {
         (option) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: ElevatedButton(
-            onPressed: _answered ? null : () => _checkAnswer(option),
+            onPressed: _controller.state.answered ? null : () => _controller.checkAnswer(option),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.green.shade900,
@@ -258,37 +160,37 @@ class QuizScreenState extends State<QuizScreen> {
               const SizedBox(height: 20),
               answerButtons,
             ],
-            if (_feedback != null) ...[
+            if (_controller.state.feedback != null) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _isCorrectAnswer ? Colors.green.shade100 : Colors.red.shade100,
+                  color: _controller.state.isCorrectAnswer ? Colors.green.shade100 : Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  _feedback!,
+                  _controller.state.feedback!,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: _isCorrectAnswer ? Colors.green.shade900 : Colors.red.shade900,
+                    color: _controller.state.isCorrectAnswer ? Colors.green.shade900 : Colors.red.shade900,
                   ),
                 ),
               ),
             ],
             const SizedBox(height: 24),
-            if (_answered)
+            if (_controller.state.answered)
               ElevatedButton.icon(
                 onPressed: () {
                   if (isLastQuestion) {
-                    _restartGame();
+                    _controller.restartGame();
                   } else {
-                    _nextQuestion();
+                    _controller.nextQuestion();
                   }
                 },
                 icon: Icon(isLastQuestion ? Icons.refresh : Icons.arrow_forward),
-                label: Text(isLastQuestion ? 'Play Again' : 'Next Question'),
+                label: Text(isLastQuestion ? AppStrings.playAgain : AppStrings.nextQuestion),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -299,14 +201,6 @@ class QuizScreenState extends State<QuizScreen> {
     );
 
     return Scaffold(
-      /*
-      appBar: AppBar(
-        title: const Text('Geo Trivia'),
-        centerTitle: true,
-        backgroundColor: Colors.green.shade700,
-        foregroundColor: Colors.white,
-      ),
-      */
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
