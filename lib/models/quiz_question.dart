@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class QuizQuestion {
-  QuizQuestion({
+  const QuizQuestion({
     required this.flag,
     required this.country,
     required this.capital,

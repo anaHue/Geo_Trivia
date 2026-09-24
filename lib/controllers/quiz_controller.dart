@@ -5,10 +5,6 @@ import 'package:geo_trivia/models/quiz_state.dart';
 import 'package:geo_trivia/services/quiz_service/quiz_service.dart';
 import 'package:geo_trivia/services/quiz_service/quiz_service_impl.dart';
 
-/// Holds the current [QuizState] and produces new states in response to
-/// user input (the "ViewModel" in an MVVM split). The widget layer only
-/// reads [state] and calls these methods - it never talks to
-/// [QuizService] directly and never mutates state itself.
 class QuizController extends ChangeNotifier {
   QuizController({QuizService? quizService})
       : _quizService = quizService ?? QuizServiceImpl();

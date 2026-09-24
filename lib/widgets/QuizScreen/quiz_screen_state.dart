@@ -5,8 +5,6 @@ import 'package:geo_trivia/controllers/quiz_controller.dart';
 
 import 'quiz_screen.dart';
 
-/// Pure view: reads state from [QuizController] and forwards user input
-/// to it. Contains no business logic and never touches services directly.
 class QuizScreenState extends State<QuizScreen> {
   late final QuizController _controller = widget.controller ?? QuizController();
 

@@ -2,17 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import 'quiz_question.dart';
 
-/// Immutable snapshot of everything the quiz screen needs to render.
-///
-/// Scalar fields (bool/int/String?) are plain public `final` fields -
-/// they're already value types, so a private field + pass-through getter
-/// would add ceremony without adding any real immutability guarantee.
-///
-/// [questions] is different: a `final List` only locks the *reference*,
-/// not the list's contents, so it's kept private and exposed through an
-/// unmodifiable view to stop callers from mutating state in place
-/// (e.g. `state.questions.shuffle()`) without going through [copyWith]
-/// and `notifyListeners()`.
 @immutable
 class QuizState {
   const QuizState({
