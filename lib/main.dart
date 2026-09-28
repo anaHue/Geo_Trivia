@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 
+import 'package:geo_trivia/constants/app_strings.dart';
 import 'widgets/QuizScreen/quiz_screen.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Geo Trivia',
+      title: AppStrings.appTitle,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
