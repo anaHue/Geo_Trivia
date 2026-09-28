@@ -4,13 +4,12 @@ import 'package:sealed_countries/sealed_countries.dart';
 import 'quiz_service.dart';
 
 class QuizServiceImpl implements QuizService {
-  static const _poolSize = 30;
   static const _questionCount = 20;
   static const _optionCount = 4;
 
   @override
   List<QuizQuestion> loadQuestions() {
-    final pool = WorldCountry.list
+    final selected = WorldCountry.list
         .where((c) =>
             c.name.common.trim().isNotEmpty &&
             c.capitalInfo?.capital.name.trim().isNotEmpty == true &&
@@ -18,10 +17,9 @@ class QuizServiceImpl implements QuizService {
         .toList()
       ..shuffle();
 
-    final selected = pool.take(_poolSize).toList();
     final capitals = selected.map((c) => c.capitalInfo!.capital.name.trim()).toList();
 
-    final questions = List.generate(selected.length, (i) {
+    final questions = List.generate(_questionCount, (i) {
       final country = selected[i];
       final capital = capitals[i];
 
@@ -36,6 +34,6 @@ class QuizServiceImpl implements QuizService {
       );
     })..shuffle();
 
-    return questions.take(_questionCount).toList();
+    return questions;
   }
 }
