@@ -6,7 +6,8 @@ import 'quiz_screen_state.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key, this.controller});
-  
+
+
   final QuizController? controller;
 
   @override

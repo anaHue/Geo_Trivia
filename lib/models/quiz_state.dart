@@ -12,6 +12,7 @@ class QuizState {
     this.feedback,
     this.answered = false,
     this.isCorrectAnswer = false,
+    this.selectedOption,
   }) : _questions = questions;
 
   final List<QuizQuestion> _questions;
@@ -21,6 +22,11 @@ class QuizState {
   final String? feedback;
   final bool answered;
   final bool isCorrectAnswer;
+
+  /// The option the user tapped for the current question, so the UI can
+  /// highlight it (and the correct one) once [answered] is true. Null
+  /// before an answer is given.
+  final String? selectedOption;
 
   List<QuizQuestion> get questions => List.unmodifiable(_questions);
   int get questionCount => _questions.length;
@@ -37,6 +43,8 @@ class QuizState {
     bool clearFeedback = false,
     bool? answered,
     bool? isCorrectAnswer,
+    String? selectedOption,
+    bool clearSelectedOption = false,
   }) {
     return QuizState(
       questions: questions ?? _questions,
@@ -46,6 +54,7 @@ class QuizState {
       feedback: clearFeedback ? null : (feedback ?? this.feedback),
       answered: answered ?? this.answered,
       isCorrectAnswer: isCorrectAnswer ?? this.isCorrectAnswer,
+      selectedOption: clearSelectedOption ? null : (selectedOption ?? this.selectedOption),
     );
   }
 }
