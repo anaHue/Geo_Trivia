@@ -19,7 +19,7 @@ class QuizActionButton extends StatelessWidget {
       icon: Icon(isLastQuestion ? Icons.refresh : Icons.arrow_forward),
       label: Text(isLastQuestion ? AppStrings.playAgain : AppStrings.nextQuestion),
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       ),
     );
   }

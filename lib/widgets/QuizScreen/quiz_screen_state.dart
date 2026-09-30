@@ -59,8 +59,6 @@ class QuizScreenState extends State<QuizScreen> {
     final question = state.currentQuestion;
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
-    // Keyed by index, so moving to a new question fades + slides the old
-    // flag/options out and the new ones in, instead of an instant swap.
     final questionContent = AnimatedSwitcher(
       key: const ValueKey('questionSwitcher'),
       duration: const Duration(milliseconds: 350),
@@ -141,9 +139,6 @@ class QuizScreenState extends State<QuizScreen> {
   }
 }
 
-/// Renders the answer buttons for the current question. Kept as a small
-/// private widget (rather than inlined) so it can be reused in both the
-/// portrait and landscape branches above without duplicating the mapping.
 class _AnswerOptions extends StatelessWidget {
   const _AnswerOptions({required this.state, required this.controller});
 

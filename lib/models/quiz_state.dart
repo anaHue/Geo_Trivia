@@ -23,9 +23,6 @@ class QuizState {
   final bool answered;
   final bool isCorrectAnswer;
 
-  /// The option the user tapped for the current question, so the UI can
-  /// highlight it (and the correct one) once [answered] is true. Null
-  /// before an answer is given.
   final String? selectedOption;
 
   List<QuizQuestion> get questions => List.unmodifiable(_questions);
